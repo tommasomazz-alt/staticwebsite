@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_onepair(self):
@@ -30,3 +30,36 @@ class TestHTMLNode(unittest.TestCase):
         node = LeafNode("a",None)
         with self.assertRaises(ValueError):
             node.to_html()
+
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+    def test_to_html_with_no_children_None(self):
+        parent_node = ParentNode("div",None)
+        with self.assertRaises(ValueError):
+            parent_node.to_html()
+
+    def test_to_html_with_no_children_empty(self):
+        parent_node = ParentNode("div",[])
+        with self.assertRaises(ValueError):
+            parent_node.to_html()
+
+    def test_to_html_with_subparents_and_props(self):
+        grandchild_node = LeafNode("b", "grandchild",{"href":"link.it"})
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node],{"prop":"ciao"})
+        self.assertEqual(
+            parent_node.to_html(),
+            '<div prop="ciao"><span><b href="link.it">grandchild</b></span></div>',
+        )
