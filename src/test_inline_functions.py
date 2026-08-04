@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType, text_node_to_html_node
-from inline_functions import split_nodes_delimiter
+from inline_functions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
 
 class TestSplitNodes(unittest.TestCase):
     def test_basic(self):
@@ -97,3 +97,39 @@ class TestSplitNodes(unittest.TestCase):
 
         with self.assertRaises(Exception):
             split_test = split_nodes_delimiter(nodes_list,"**",TextType.BOLD)
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://www.google.it)"
+        )
+        self.assertListEqual([("link", "https://www.google.it")], matches)
+
+    def test_extract_markdown_many_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and a second ![image2](https://i.imgur.com/zjjcJKZ2.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png"),("image2", "https://i.imgur.com/zjjcJKZ2.png")], matches)
+
+    def test_extract_markdown_many_links(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://www.google.it) and another [link2](https://www.google.com)"
+        )
+        self.assertListEqual([("link", "https://www.google.it"),("link2", "https://www.google.com")], matches)
+
+    def test_extract_markdown_only_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and a second [link](https://www.google.it)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_only_links(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://www.google.it) and an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("link", "https://www.google.it")], matches)
