@@ -38,6 +38,74 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     
     return split_nodes
 
+def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+    split_nodes = []
+    for node in old_nodes:
+        remaining_text = node.text
+        if node.text_type != TextType.TEXT:
+            split_nodes.append(node)
+            continue
+        
+        images = extract_markdown_images(node.text)
+        if len(images) == 0:
+            split_nodes.append(node)
+            continue
+
+        for group in images:
+            node_words = remaining_text.split(f"![{group[0]}]({group[1]})", 1)
+
+            if len(node_words) != 2:
+                raise ValueError("Invalid markdown, image section not closed")
+
+            if node_words[0] != "":
+                new_node = TextNode(node_words[0], TextType.TEXT)
+                split_nodes.append(new_node)
+
+            new_node = TextNode(group[0], TextType.IMAGE, group[1])
+            split_nodes.append(new_node)
+
+            remaining_text = node_words[1]
+
+        if remaining_text != "":
+            new_node = TextNode(remaining_text, TextType.TEXT)
+            split_nodes.append(new_node)
+
+    return split_nodes
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    split_nodes = []
+    for node in old_nodes:
+        remaining_text = node.text
+        if node.text_type != TextType.TEXT:
+            split_nodes.append(node)
+            continue
+        
+        links = extract_markdown_links(node.text)
+        if len(links) == 0:
+            split_nodes.append(node)
+            continue
+
+        for group in links:
+            node_words = remaining_text.split(f"[{group[0]}]({group[1]})", 1)
+
+            if len(node_words) != 2:
+                raise ValueError("Invalid markdown, links section not closed")
+
+            if node_words[0] != "":
+                new_node = TextNode(node_words[0], TextType.TEXT)
+                split_nodes.append(new_node)
+
+            new_node = TextNode(group[0], TextType.LINK, group[1])
+            split_nodes.append(new_node)
+
+            remaining_text = node_words[1]
+
+        if remaining_text != "":
+            new_node = TextNode(remaining_text, TextType.TEXT)
+            split_nodes.append(new_node)
+
+    return split_nodes
+
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
     regex_images = re.findall(pattern, text)
