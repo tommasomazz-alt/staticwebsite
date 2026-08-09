@@ -116,3 +116,15 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     regex_links = re.findall(pattern, text)
     return regex_links
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    Starting_node = TextNode(text, TextType.TEXT)
+    Starting_nodes = [Starting_node]
+
+    split_bold = split_nodes_delimiter(Starting_nodes,"**",TextType.BOLD)
+    split_italics = split_nodes_delimiter(split_bold,"_",TextType.ITALIC)
+    split_code = split_nodes_delimiter(split_italics,"`",TextType.CODE)
+    split_images = split_nodes_image(split_code)
+    split_links = split_nodes_link(split_images)
+
+    return split_links

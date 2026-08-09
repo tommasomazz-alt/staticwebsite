@@ -1,5 +1,9 @@
 import unittest
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import (
+    TextNode, 
+    TextType, 
+    text_node_to_html_node,
+    )
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -64,8 +68,7 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a mistake", None)
         with self.assertRaises(Exception):
             text_node_to_html_node(node)
-        
-        
+
 
 if __name__ == "__main__":
     unittest.main()
