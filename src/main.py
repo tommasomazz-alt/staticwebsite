@@ -1,8 +1,14 @@
-from textnode import TextNode, TextType
+import os
+import shutil
+from copystatic import static_to_public
 
 def main() -> None:
+
+    if "public" in os.listdir("./"):
+        shutil.rmtree("./public")
+
+    os.mkdir("./public")
     
-    Test = TextNode("sono un testo di test","link","https://www.ciao.it")
-    print(Test)
+    static_to_public("static","public")
 
 main()
